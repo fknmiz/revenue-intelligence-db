@@ -1,7 +1,7 @@
 -- ============================================================
 -- REVENUE INTELLIGENCE DATABASE
 -- PostgreSQL | Normalized Schema | v1.0
--- Author: Miz Causevic | github.com/fknmiz
+-- Author: Miz Causevic | github.com/mizcausevic-dev
 -- ============================================================
 
 -- ============================================================

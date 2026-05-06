@@ -63,7 +63,7 @@ deal_stage:    prospecting | qualification | proposal | negotiation | closed_won
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/fknmiz/revenue-intelligence-db.git
+git clone https://github.com/mizcausevic-dev/revenue-intelligence-db.git
 cd revenue-intelligence-db
 
 # 2. Create the database
@@ -235,4 +235,4 @@ GROUP BY cohort_month;
 
 ---
 
-*Part of [fknmiz's GitHub portfolio](https://github.com/fknmiz) — demonstrating enterprise data modeling and B2B revenue analytics.*
+*Part of [mizcausevic-dev's GitHub portfolio](https://github.com/mizcausevic-dev) — demonstrating enterprise data modeling and B2B revenue analytics.*

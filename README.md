@@ -1,10 +1,10 @@
-# Revenue Intelligence Database 📊
+# Revenue Intelligence Database
 
-> **PostgreSQL portfolio project** demonstrating normalized relational schema design, realistic B2B SaaS seed data, and production-grade SQL queries for key revenue metrics.
+PostgreSQL portfolio project demonstrating **normalized revenue data modeling**, realistic B2B SaaS seed data, and production-grade SQL queries for CAC, ARR, funnel, pipeline, and conversion metrics.
 
-**Recruiter takeaway:** *"This person understands data modeling and business metrics."*
-
----
+> **What this repo proves**
+>
+> Metrics only become trustworthy when the schema beneath them is durable, inspectable, and designed for the questions operators actually ask.
 
 ## Project Overview
 
@@ -13,32 +13,32 @@
 | **Database** | PostgreSQL 15+ |
 | **Schema Style** | 3NF Normalized, UUID primary keys |
 | **Domain** | B2B SaaS Revenue Intelligence |
-| **Seed Data** | 12 customers · 8 campaigns · 30 leads · 15 pipeline deals · 7 revenue records |
-| **Metrics Covered** | CAC · Pipeline · Conversion · MQL→SQL · ARR · CLV |
+| **Seed Data** | 12 customers Â· 8 campaigns Â· 30 leads Â· 15 pipeline deals Â· 7 revenue records |
+| **Metrics Covered** | CAC Â· Pipeline Â· Conversion Â· MQLâ†’SQL Â· ARR Â· CLV |
 
 ---
 
 ## Schema Architecture
 
 ```
-customers ──────────────────────────────────────────────┐
-    │                                                    │
-    │ 1:N                                                │ 1:N
-    ▼                                                    ▼
-  leads ──────────────── campaigns               revenue
-    │                                                ▲
-    │ 1:1                                            │ 1:1
-    ▼                                                │
-  pipeline ───────────────────────────────────────────
+customers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+    â”‚                                                    â”‚
+    â”‚ 1:N                                                â”‚ 1:N
+    â–¼                                                    â–¼
+  leads â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ campaigns               revenue
+    â”‚                                                â–²
+    â”‚ 1:1                                            â”‚ 1:1
+    â–¼                                                â”‚
+  pipeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 ```
 
 ### Tables
 
 | Table | Purpose | Key Columns |
 |---|---|---|
-| `customers` | Account master — B2B companies | `customer_id`, `industry`, `employee_size`, `region` |
+| `customers` | Account master â€” B2B companies | `customer_id`, `industry`, `employee_size`, `region` |
 | `campaigns` | Marketing campaigns with budget & type | `campaign_id`, `campaign_type`, `budget`, `start_date` |
-| `leads` | Lead lifecycle from new → closed | `lead_id`, `status` (enum), `mql_date`, `sql_date` |
+| `leads` | Lead lifecycle from new â†’ closed | `lead_id`, `status` (enum), `mql_date`, `sql_date` |
 | `pipeline` | Sales opportunities with stage & value | `opportunity_id`, `stage` (enum), `amount`, `probability` |
 | `revenue` | Active contracts and ARR tracking | `revenue_id`, `contract_value`, `billing_period`, `is_recurring` |
 
@@ -112,7 +112,7 @@ GROUP BY stage;
 ### 3. Full Funnel Conversion Rates
 
 ```sql
--- Lead → MQL → SQL → Opportunity → Won (with % at each step)
+-- Lead â†’ MQL â†’ SQL â†’ Opportunity â†’ Won (with % at each step)
 WITH funnel AS ( ... )
 SELECT lead_to_mql_pct, mql_to_sql_pct, sql_to_opp_pct,
        opp_to_win_pct, overall_conversion_pct
@@ -151,51 +151,51 @@ GROUP BY cohort_month;
 ## ERD Diagram
 
 ```
-┌──────────────────┐       ┌──────────────────────┐
-│   customers      │       │    campaigns         │
-│──────────────────│       │──────────────────────│
-│ customer_id (PK) │       │ campaign_id (PK)     │
-│ company_name     │       │ campaign_name        │
-│ industry         │       │ campaign_type (enum) │
-│ employee_size    │       │ channel              │
-│ region           │       │ budget               │
-│ created_at       │       │ start_date / end_date│
-└────────┬─────────┘       └──────────┬───────────┘
-         │ 1:N                         │ 1:N
-         ▼                             ▼
-┌──────────────────────────────────────────────────┐
-│                   leads                          │
-│──────────────────────────────────────────────────│
-│ lead_id (PK)                                     │
-│ customer_id (FK → customers)                     │
-│ campaign_id (FK → campaigns)                     │
-│ first_name, last_name, email, job_title          │
-│ status (enum: new→mql→sql→opportunity→won/lost)  │
-│ mql_date, sql_date                               │
-└───────────────────────┬──────────────────────────┘
-                        │ 1:1
-                        ▼
-┌──────────────────────────────────────────────────┐
-│                  pipeline                        │
-│──────────────────────────────────────────────────│
-│ opportunity_id (PK)                              │
-│ lead_id (FK → leads)                             │
-│ customer_id (FK → customers)                     │
-│ opportunity_name                                 │
-│ stage (enum: prospecting → closed_won)           │
-│ amount, probability (0-100), expected_close      │
-└───────────────────────┬──────────────────────────┘
-                        │ 1:N
-                        ▼
-┌──────────────────────────────────────────────────┐
-│                  revenue                         │
-│──────────────────────────────────────────────────│
-│ revenue_id (PK)                                  │
-│ customer_id (FK → customers)                     │
-│ opportunity_id (FK → pipeline)                   │
-│ contract_value, contract_type, billing_period    │
-│ start_date, end_date, is_recurring               │
-└──────────────────────────────────────────────────┘
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”       â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚   customers      â”‚       â”‚    campaigns         â”‚
+â”‚â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚       â”‚â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚
+â”‚ customer_id (PK) â”‚       â”‚ campaign_id (PK)     â”‚
+â”‚ company_name     â”‚       â”‚ campaign_name        â”‚
+â”‚ industry         â”‚       â”‚ campaign_type (enum) â”‚
+â”‚ employee_size    â”‚       â”‚ channel              â”‚
+â”‚ region           â”‚       â”‚ budget               â”‚
+â”‚ created_at       â”‚       â”‚ start_date / end_dateâ”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜       â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+         â”‚ 1:N                         â”‚ 1:N
+         â–¼                             â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                   leads                          â”‚
+â”‚â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚
+â”‚ lead_id (PK)                                     â”‚
+â”‚ customer_id (FK â†’ customers)                     â”‚
+â”‚ campaign_id (FK â†’ campaigns)                     â”‚
+â”‚ first_name, last_name, email, job_title          â”‚
+â”‚ status (enum: newâ†’mqlâ†’sqlâ†’opportunityâ†’won/lost)  â”‚
+â”‚ mql_date, sql_date                               â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â”‚ 1:1
+                        â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                  pipeline                        â”‚
+â”‚â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚
+â”‚ opportunity_id (PK)                              â”‚
+â”‚ lead_id (FK â†’ leads)                             â”‚
+â”‚ customer_id (FK â†’ customers)                     â”‚
+â”‚ opportunity_name                                 â”‚
+â”‚ stage (enum: prospecting â†’ closed_won)           â”‚
+â”‚ amount, probability (0-100), expected_close      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+                        â”‚ 1:N
+                        â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚                  revenue                         â”‚
+â”‚â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”‚
+â”‚ revenue_id (PK)                                  â”‚
+â”‚ customer_id (FK â†’ customers)                     â”‚
+â”‚ opportunity_id (FK â†’ pipeline)                   â”‚
+â”‚ contract_value, contract_type, billing_period    â”‚
+â”‚ start_date, end_date, is_recurring               â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 ```
 
 ---
@@ -208,8 +208,8 @@ GROUP BY cohort_month;
 | **ENUM types** | Enforce valid lead/deal states at the database level |
 | **NULLIF guards in metrics** | Prevents division-by-zero in CAC and conversion rate queries |
 | **Trigger for `updated_at`** | Automatic timestamp maintenance without application-layer code |
-| **`billing_period` normalization** | Monthly vs. annual contracts normalized to ARR in queries (×12 for monthly) |
-| **Probability on pipeline** | Enables weighted pipeline value — a standard sales forecasting technique |
+| **`billing_period` normalization** | Monthly vs. annual contracts normalized to ARR in queries (Ã—12 for monthly) |
+| **Probability on pipeline** | Enables weighted pipeline value â€” a standard sales forecasting technique |
 | **Denormalized `customer_id` on pipeline** | Allows direct customer queries on pipeline without requiring a lead to exist |
 
 ---
@@ -218,12 +218,12 @@ GROUP BY cohort_month;
 
 | Metric | Formula | Query |
 |---|---|---|
-| **CAC** | Campaign Spend ÷ New Customers | `queries.sql` Line 12 |
-| **MQL→SQL Rate** | (SQLs ÷ MQLs) × 100 | `queries.sql` Line 74 |
-| **Overall Conversion** | (Won ÷ Total Leads) × 100 | `queries.sql` Line 44 |
-| **ARR** | Σ(annual_contract_value) for active recurring | `queries.sql` Line 98 |
-| **Weighted Pipeline** | Σ(amount × probability%) | `queries.sql` Line 33 |
-| **CLV** | Avg ARR ÷ Churn Rate | `queries.sql` Line 122 |
+| **CAC** | Campaign Spend Ã· New Customers | `queries.sql` Line 12 |
+| **MQLâ†’SQL Rate** | (SQLs Ã· MQLs) Ã— 100 | `queries.sql` Line 74 |
+| **Overall Conversion** | (Won Ã· Total Leads) Ã— 100 | `queries.sql` Line 44 |
+| **ARR** | Î£(annual_contract_value) for active recurring | `queries.sql` Line 98 |
+| **Weighted Pipeline** | Î£(amount Ã— probability%) | `queries.sql` Line 33 |
+| **CLV** | Avg ARR Ã· Churn Rate | `queries.sql` Line 122 |
 
 ---
 
@@ -235,8 +235,8 @@ GROUP BY cohort_month;
 
 ---
 
-*Part of [mizcausevic-dev's GitHub portfolio](https://github.com/mizcausevic-dev) — demonstrating enterprise data modeling and B2B revenue analytics.*
+*Part of [mizcausevic-dev's GitHub portfolio](https://github.com/mizcausevic-dev) â€” demonstrating enterprise data modeling and B2B revenue analytics.*
 
 ---
 
-**Connect:** [LinkedIn](https://www.linkedin.com/in/mirzacausevic/) · [Kinetic Gain](https://kineticgain.com) · [Medium](https://medium.com/@mizcausevic/) · [Skills](https://mizcausevic.com/skills/)
+**Connect:** [LinkedIn](https://www.linkedin.com/in/mirzacausevic/) Â· [Kinetic Gain](https://kineticgain.com) Â· [Medium](https://medium.com/@mizcausevic/) Â· [Skills](https://mizcausevic.com/skills/)
